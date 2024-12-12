@@ -1,12 +1,23 @@
 import React from 'react'
 import './styles/App.css'
 import Title from './components/Title'
+import { CountProvider } from './context/CountContext'
+import ThumbUp from './components/ThumbUp'
+import StaticComponent from './components/StaticComponent'
 
-const App: React.FC = () => {
+interface AppProps {
+  className?: string
+}
+const App: React.FC<AppProps> = ({ className = '' }) => {
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Title name="React Demo Component" />
-    </div>
+    <CountProvider>
+      <div className={`p-4 ${className}`}>
+        <h1 className="text-2xl font-bold mb-4">Context Demo</h1>
+        <Title />
+        <ThumbUp />
+        <StaticComponent />
+      </div>
+    </CountProvider>
   )
 }
 

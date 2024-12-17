@@ -1,46 +1,154 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
-interface TitleProps {
-  name: string
-}
+// Biến toàn cục
+let globalCount = 0
+// Biến đếm số lần render
+let renderCounter = 0
 
-const Title: React.FC<TitleProps> = ({ name }) => {
-  // Khởi tạo state count với giá trị ban đầu là 0
-  const [count, setCount] = useState<number>(0)
-  
-  // Log để theo dõi giá trị count khi click
-  const handleIncrement = () => {
-    console.log("clicked, current count:", count)
-    setCount(count + 1)
-  }
+const Title: React.FC = () => {
+  // Tăng biến đếm mỗi lần component render
+  renderCounter++
+  console.log('Component đang render lần thứ:', renderCounter)
+ 
+ // 1. React State
+ const [stateCount, setStateCount] = useState<number>(0)
+ 
+ // 2. useRef
+ const refCount = useRef<number>(0)
+ 
+ // 3. Biến local 
+ let localCount = 0
 
-  return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">{name}</h2>
-      
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={handleIncrement}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            +
-          </button>
-          <span className="text-xl">Count: {count}</span>
-        </div>
+ // State để cho phép force render
+ const [, forceRender] = useState({})
 
-        {/* Hiển thị timeline của state */}
-        <div className="mt-4 p-4 bg-gray-100 rounded">
-          <h3 className="font-semibold mb-2">Timeline:</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Current state value: {count}</li>
-            <li>Next state value will be: {count + 1}</li>
-            <li>Component will re-render after setCount({count + 1})</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  )
+ // Theo dõi các giá trị sau mỗi lần render
+ useEffect(() => {
+   console.log('Sau khi render, các giá trị là:', {
+     stateCount,
+     refCount: refCount.current,
+     globalCount,
+     localCount
+   })
+ })
+
+ // Handlers không có forceRender
+ const handleStateCount = () => {
+   setStateCount(prev => {
+     console.log('State đang được cập nhật từ', prev, 'thành', prev + 1)
+     return prev + 1
+   })
+ }
+
+ const handleRefCount = () => {
+   refCount.current += 1
+   console.log('Ref đã tăng thành:', refCount.current, '(UI chưa cập nhật)')
+ }
+
+ const handleGlobalCount = () => {
+   globalCount += 1
+   console.log('Global đã tăng thành:', globalCount, '(UI chưa cập nhật)')
+ }
+
+ const handleLocalCount = () => {
+   localCount += 1
+   console.log('Local đã tăng thành:', localCount, '(sẽ bị reset khi render lại)')
+ }
+
+ return (
+   <div className="p-6 bg-white rounded-lg shadow-lg space-y-8">
+     <div className="bg-gray-100 p-4 rounded-md">
+       <h3 className="font-semibold">Demo Cách Hoạt Động Của Các Loại Biến</h3>
+       <p className="text-sm text-gray-600 mt-2">
+         Mở Console (F12) để theo dõi chi tiết
+       </p>
+     </div>
+
+     {/* 1. React State */}
+     <div className="p-4 bg-blue-50 rounded-md">
+       <h3 className="font-semibold mb-2">1. React State</h3>
+       <div className="flex items-center space-x-4">
+         <button 
+           onClick={handleStateCount}
+           className="px-4 py-2 bg-blue-500 text-white rounded"
+         >
+           Tăng State
+         </button>
+         <span>Giá trị: {stateCount}</span>
+       </div>
+       <p className="mt-2 text-sm text-gray-600">
+         ✅ Tự động re-render khi giá trị thay đổi
+       </p>
+     </div>
+
+     {/* 2. useRef */}
+     <div className="p-4 bg-green-50 rounded-md">
+       <h3 className="font-semibold mb-2">2. useRef</h3>
+       <div className="flex items-center space-x-4">
+         <button 
+           onClick={handleRefCount}
+           className="px-4 py-2 bg-green-500 text-white rounded"
+         >
+           Tăng Ref
+         </button>
+         <span>Giá trị UI: {refCount.current}</span>
+       </div>
+       <p className="mt-2 text-sm text-gray-600">
+         ✅ Giữ được giá trị qua các lần render<br/>
+         ❌ UI không tự cập nhật (kiểm tra console)
+       </p>
+     </div>
+
+     {/* 3. Global Variable */}
+     <div className="p-4 bg-yellow-50 rounded-md">
+       <h3 className="font-semibold mb-2">3. Biến Global</h3>
+       <div className="flex items-center space-x-4">
+         <button 
+           onClick={handleGlobalCount}
+           className="px-4 py-2 bg-yellow-500 text-white rounded"
+         >
+           Tăng Global
+         </button>
+         <span>Giá trị UI: {globalCount}</span>
+       </div>
+       <p className="mt-2 text-sm text-gray-600">
+         ✅ Giữ được giá trị xuyên suốt ứng dụng<br/>
+         ❌ UI không tự cập nhật (kiểm tra console)
+       </p>
+     </div>
+
+     {/* 4. Local Variable */}
+     <div className="p-4 bg-red-50 rounded-md">
+       <h3 className="font-semibold mb-2">4. Biến Local</h3>
+       <div className="flex items-center space-x-4">
+         <button 
+           onClick={handleLocalCount}
+           className="px-4 py-2 bg-red-500 text-white rounded"
+         >
+           Tăng Local
+         </button>
+         <span>Giá trị UI: {localCount}</span>
+       </div>
+       <p className="mt-2 text-sm text-gray-600">
+         ❌ Giá trị bị reset mỗi lần render<br/>
+         ❌ UI không tự cập nhật (kiểm tra console)
+       </p>
+     </div>
+
+     {/* Force Re-render button */}
+     <div className="mt-4">
+       <button
+         onClick={() => forceRender({})}
+         className="px-4 py-2 bg-gray-500 text-white rounded"
+       >
+         Force Re-render
+       </button>
+       <p className="mt-2 text-sm text-gray-600">
+         Click để xem giá trị UI cập nhật
+       </p>
+     </div>
+   </div>
+ )
 }
 
 export default Title
